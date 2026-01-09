@@ -1,0 +1,30 @@
+- name: Install nginx
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+
+- name: Ensure nginx is running
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true
+
+- name: Deploy index.html
+  ansible.builtin.template:
+    src: index.html.j2
+    dest: /var/www/html/index.html
+    mode: "0644"
+  notify: Reload nginx
+
+- name: Create /health endpoint
+  ansible.builtin.copy:
+    content: "ok\n"
+    dest: /var/www/html/health
+    mode: "0644"
+  notify: Reload nginx
+
+- name: Allow HTTP in UFW (optional)
+  community.general.ufw:
+    rule: allow
+    port: "80"
+    proto: tcp

@@ -1,0 +1,12 @@
+haproxy_backends:
+  - name: web01
+    address: 172.31.45.16
+    port: 80
+  - name: web02
+    address: 172.31.45.32
+    port: 80
+haproxy_enable_stats: true
+haproxy_stats_port: 8404
+haproxy_stats_uri: /stats
+haproxy_stats_user: admin
+haproxy_stats_pass: "Blackhawks12//$"

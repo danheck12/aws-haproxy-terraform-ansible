@@ -1,0 +1,17 @@
+- name: Baseline all nodes
+  hosts: all
+  become: true
+  roles:
+    - common
+
+- name: Configure web tier
+  hosts: webservers
+  become: true
+  roles:
+    - web
+
+- name: Configure load balancer
+  hosts: loadbalancers
+  become: true
+  roles:
+    - lb

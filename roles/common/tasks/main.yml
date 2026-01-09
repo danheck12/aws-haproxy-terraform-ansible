@@ -1,0 +1,26 @@
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Install baseline packages
+  ansible.builtin.apt:
+    name:
+      - curl
+    state: present
+
+# Optional: only enable UFW if you want host-level firewall in addition to AWS SGs.
+- name: Install ufw (optional)
+  ansible.builtin.apt:
+    name: ufw
+    state: present
+
+- name: Allow SSH in UFW (optional)
+  community.general.ufw:
+    rule: allow
+    name: OpenSSH
+
+- name: Enable UFW (optional)
+  community.general.ufw:
+    state: enabled
+    policy: deny
