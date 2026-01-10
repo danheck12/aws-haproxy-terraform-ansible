@@ -1,4 +1,4 @@
-# AWS HAProxy Ansible Automation
+# AWS HAProxy Ansible Terraform Automation
 
 This repository contains **role-based Ansible automation** used to configure a production-style HAProxy load balancing stack on AWS EC2 instances.
 
@@ -128,5 +128,6 @@ Ansible 2.14+
 Infrastructure (Terraform): aws-haproxy-terraform
 
 Monitoring: Prometheus + Grafana deployed separately
+
 
 
