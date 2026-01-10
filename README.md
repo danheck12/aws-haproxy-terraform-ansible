@@ -98,3 +98,9 @@ web-01 ansible_host=PUBLIC_IP private_ip=PRIVATE_IP
 web-02 ansible_host=PUBLIC_IP private_ip=PRIVATE_IP
 
 
+
+2️⃣ Run the full configuration
+ansible-playbook -i inventory/inventory.ini site.yml
+
+3️⃣ Validate
+curl http://<LOAD_BALANCER_PUBLIC_IP>
