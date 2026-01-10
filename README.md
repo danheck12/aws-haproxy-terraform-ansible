@@ -104,3 +104,29 @@ ansible-playbook -i inventory/inventory.ini site.yml
 
 3️⃣ Validate
 curl http://<LOAD_BALANCER_PUBLIC_IP>
+
+🔍 Key Lessons & Design Decisions
+
+Separation of concerns: Terraform handles infrastructure, Ansible handles configuration
+
+Private backend routing: HAProxy communicates with web servers using VPC private IPs
+
+Idempotency: Playbooks can be re-run safely without unintended changes
+
+Role-based structure: Clean, scalable automation design
+
+🧪 Tested On
+
+Ubuntu Server 22.04 LTS
+
+AWS EC2 (t3.micro)
+
+Ansible 2.14+
+
+📌 Related Repositories
+
+Infrastructure (Terraform): aws-haproxy-terraform
+
+Monitoring: Prometheus + Grafana deployed separately
+
+
