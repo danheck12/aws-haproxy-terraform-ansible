@@ -1,17 +1,19 @@
-- name: Baseline all nodes
-  hosts: all
-  become: true
-  roles:
-    - common
 
-- name: Configure web tier
-  hosts: webservers
+---
+- name: Configure Web Servers
+  hosts: web
   become: true
   roles:
     - web
 
-- name: Configure load balancer
-  hosts: loadbalancers
+- name: Configure Load Balancer
+  hosts: lb
   become: true
   roles:
     - lb
+
+- name: Configure Monitoring
+  hosts: monitor
+  become: true
+  roles:
+    - monitor

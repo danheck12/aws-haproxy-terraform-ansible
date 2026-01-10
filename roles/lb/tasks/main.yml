@@ -1,31 +1,19 @@
-- name: Install haproxy
-  ansible.builtin.apt:
+---
+- name: Install HAProxy
+  apt:
     name: haproxy
     state: present
+    update_cache: yes
 
-- name: Deploy haproxy.cfg
-  ansible.builtin.template:
+- name: Deploy HAProxy config
+  template:
     src: haproxy.cfg.j2
     dest: /etc/haproxy/haproxy.cfg
-    mode: "0644"
-    validate: "haproxy -c -f %s"
-  notify: Restart haproxy
+    mode: '0644'
+  notify: Restart HAProxy
 
-- name: Ensure haproxy is running
-  ansible.builtin.service:
+- name: Enable and start HAProxy
+  systemd:
     name: haproxy
     state: started
-    enabled: true
-
-- name: Allow HTTP in UFW (optional)
-  community.general.ufw:
-    rule: allow
-    port: "80"
-    proto: tcp
-
-- name: Allow HAProxy stats in UFW (optional)
-  community.general.ufw:
-    rule: allow
-    port: "{{ haproxy_stats_port }}"
-    proto: tcp
-  when: haproxy_enable_stats | bool
+    enabled: yes
