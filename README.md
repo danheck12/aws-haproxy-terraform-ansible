@@ -1,119 +1,156 @@
-# AWS HAProxy Ansible Terraform Automation
+AWS HAProxy Terraform + Ansible Automation
 
-This repository contains **role-based Ansible automation** used to configure a production-style HAProxy load balancing stack on AWS EC2 instances.
+This project demonstrates a production-style AWS infrastructure and configuration workflow using Terraform for infrastructure provisioning and Ansible for configuration management.
 
-The infrastructure itself is provisioned separately using Terraform. This repository focuses purely on **configuration management and service orchestration**.
+Terraform is responsible for creating all AWS resources (VPC, subnets, security groups, EC2 instances), while Ansible configures HAProxy, Nginx, and monitoring services on top of that infrastructure.
 
----
+🏗️ Architecture Overview
+                Internet
+                    |
+            ┌───────▼────────┐
+            │     lb-01       │
+            │    HAProxy      │
+            │  (Public IP)    │
+            └───────┬────────┘
+                    │
+        ┌───────────┴───────────┐
+        │                       │
+┌───────▼────────┐     ┌────────▼───────┐
+│    web-01       │     │     web-02     │
+│   Nginx         │     │    Nginx       │
+│ (Private IP)    │     │ (Private IP)   │
+└─────────────────┘     └────────────────┘
 
-## 🏗️ Architecture Overview
+                    ┌───────────────────┐
+                    │     mon-01        │
+                    │ Prometheus /      │
+                    │ Grafana /         │
+                    │ Node Exporter     │
+                    └───────────────────┘
 
-            ┌──────────────┐
-            │   Internet   │
-            └──────┬───────┘
-                   │
-            ┌──────▼───────┐
-            │   lb-01      │
-            │  (HAProxy)  │
-            └──────┬───────┘
-                   │
-      ┌────────────┴────────────┐
-      │                         │
-            ┌──────────────┐
-            │   Internet   │
-            └──────┬───────┘
-                   │
-            ┌──────▼───────┐
-            │   lb-01      │
-            │  (HAProxy)  │
-            └──────┬───────┘
-                   │
-      ┌────────────┴────────────┐
-      │                         │
+🚀 What This Project Does
+Terraform — Infrastructure Provisioning
 
----
+Terraform provisions the complete AWS environment, including:
 
-## 🚀 What This Repo Does
+Custom VPC and public subnet
 
-Using Ansible, this project automatically:
+Internet Gateway and routing
 
-- Configures **Nginx** on web servers
-- Configures **HAProxy** as a load balancer with:
-  - Round-robin balancing
-  - Health checks
-  - Dynamic backend generation
-- Deploys **Node Exporter** for monitoring
-- Uses **private IPs for backend traffic**
-- Ensures idempotent, repeatable deployments
+Security groups with least-privilege access
 
----
+EC2 instances:
 
-## 📁 Repository Structure
+lb-01 — HAProxy load balancer
 
-aws-haproxy-ansible/
-├── inventory/
-│ └── inventory.ini
-├── roles/
-│ ├── web/
-│ │ └── tasks/main.yml
-│ ├── lb/
-│ │ ├── tasks/main.yml
-│ │ ├── handlers/main.yml
-│ │ └── templates/haproxy.cfg.j2
-│ └── monitor/
-│ └── tasks/main.yml
-└── site.yml
+web-01, web-02 — Nginx backend servers
+
+mon-01 — Monitoring host
+
+Terraform outputs provide public and private IPs for Ansible automation
+
+Ansible — Configuration Management
+
+Ansible configures services on the provisioned EC2 instances:
+
+Installs and configures Nginx on backend servers
+
+Installs and configures HAProxy with:
+
+Round-robin load balancing
+
+Health checks
+
+Dynamic backend generation from inventory
+
+Private-IP backend routing
+
+Installs and runs Node Exporter for monitoring
+
+Uses role-based, idempotent playbooks
+
+📁 Repository Structure
+aws-haproxy-terraform-ansible/
+├── terraform/
+│   ├── main.tf
+│   ├── variables.tf
+│   ├── outputs.tf
+│   ├── versions.tf
+│   └── terraform.tfvars
+│
+├── ansible/
+│   ├── inventory/
+│   │   └── inventory.ini
+│   ├── roles/
+│   │   ├── web/
+│   │   ├── lb/
+│   │   └── monitor/
+│   └── site.yml
+└── README.md
+
+⚙️ Ansible Roles Breakdown
+🔹 web
+
+Installs and starts Nginx
+
+Deploys a simple HTML page identifying the host
+
+Used to validate load-balancing behavior
+
+🔹 lb
+
+Installs HAProxy
+
+Dynamically generates backend configuration using inventory data
+
+Routes traffic to backend servers via VPC private IPs
+
+Automatically reloads HAProxy on configuration changes
+
+🔹 monitor
+
+Installs and runs Node Exporter
+
+Exposes host-level metrics for Prometheus
+
+▶️ How to Run
+1️⃣ Provision infrastructure with Terraform
+cd terraform
+terraform init
+terraform apply
 
 
----
+Record the public and private IPs from Terraform outputs.
 
-## ⚙️ Roles Breakdown
+2️⃣ Update Ansible inventory
 
-### 🔹 web
-- Installs and starts Nginx
-- Deploys a simple HTML page identifying the host
-- Used to verify load balancing behavior
+Edit ansible/inventory/inventory.ini using Terraform outputs:
 
-### 🔹 lb
-- Installs HAProxy
-- Generates backend configuration dynamically using inventory data
-- Routes traffic to web servers via **private IPs**
-- Restarts HAProxy automatically on config changes
-
-### 🔹 monitor
-- Installs and runs Node Exporter
-- Provides host-level metrics for Prometheus
-
----
-
-## ▶️ How to Run
-
-### 1️⃣ Ensure inventory is updated
-Edit `inventory/inventory.ini` with the correct IPs from Terraform outputs.
-
-Example:
-```ini
 [web]
 web-01 ansible_host=PUBLIC_IP private_ip=PRIVATE_IP
 web-02 ansible_host=PUBLIC_IP private_ip=PRIVATE_IP
 
-
-
-2️⃣ Run the full configuration
+3️⃣ Run Ansible configuration
+cd ansible
 ansible-playbook -i inventory/inventory.ini site.yml
 
-3️⃣ Validate
+4️⃣ Validate
 curl http://<LOAD_BALANCER_PUBLIC_IP>
 
-🔍 Key Lessons & Design Decisions
 
-Separation of concerns: Terraform handles infrastructure, Ansible handles configuration
+Traffic should alternate between backend servers.
 
-Private backend routing: HAProxy communicates with web servers using VPC private IPs
+🔍 Key Design Decisions
 
-Idempotency: Playbooks can be re-run safely without unintended changes
+Separation of concerns — Terraform provisions infrastructure, Ansible configures services
 
-Role-based structure: Clean, scalable automation design
+Private backend routing — HAProxy communicates with backends using private IPs
+
+Security-first design — tightly scoped security group rules between tiers
+
+Idempotent automation — playbooks can be safely re-run
+
+Role-based structure — scalable, maintainable automation
 
 🧪 Tested On
 
@@ -121,13 +158,6 @@ Ubuntu Server 22.04 LTS
 
 AWS EC2 (t3.micro)
 
+Terraform 1.5+
+
 Ansible 2.14+
-
-📌 Related Repositories
-
-Infrastructure (Terraform): aws-haproxy-terraform
-
-Monitoring: Prometheus + Grafana deployed separately
-
-
-
