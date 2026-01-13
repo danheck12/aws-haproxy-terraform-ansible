@@ -1,5 +1,7 @@
 # AWS HAProxy Terraform + Ansible Automation
 
+![Terraform](https://github.com/danheck12/aws-haproxy-terraform-ansible/actions/workflows/terraform.yml/badge.svg)
+![Ansible Lint](https://github.com/danheck12/aws-haproxy-terraform-ansible/actions/workflows/ansible-lint.yml/badge.svg)
 ![Last Commit](https://img.shields.io/github/last-commit/danheck12/aws-haproxy-terraform-ansible)
 ![Repo Size](https://img.shields.io/github/repo-size/danheck12/aws-haproxy-terraform-ansible)
 ![Stars](https://img.shields.io/github/stars/danheck12/aws-haproxy-terraform-ansible?style=social)
@@ -173,3 +175,4 @@ AWS EC2 (t3.micro)
 Terraform 1.5+
 
 Ansible 2.14+
+
