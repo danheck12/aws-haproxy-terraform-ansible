@@ -1,5 +1,6 @@
 # AWS HAProxy Terraform + Ansible Automation
 
+![Terraform](https://github.com/danheck12/aws-haproxy-terraform-ansible/actions/workflows/terraform.yml/badge.svg)
 ![Ansible Lint](https://github.com/danheck12/aws-haproxy-terraform-ansible/actions/workflows/ansible-lint.yml/badge.svg)
 ![Last Commit](https://img.shields.io/github/last-commit/danheck12/aws-haproxy-terraform-ansible)
 ![Repo Size](https://img.shields.io/github/repo-size/danheck12/aws-haproxy-terraform-ansible)
@@ -104,12 +105,78 @@ Copy code
 
 ## Getting Started
 
+## Getting Started
+
+This project uses **Terraform** to provision AWS infrastructure and **Ansible** to configure HAProxy and backend web servers.
+
 ### Prerequisites
 - AWS CLI configured (`aws sts get-caller-identity` works)
 - Terraform 1.5+
 - Ansible 2.14+
-- SSH keypair available and allowed by your security group
-- Ubuntu 22.04+ recommended (matches the lab assumptions)
+- Existing EC2 Key Pair in AWS
+- Your public IP address (for SSH allow-listing)
+- Ubuntu 22.04+ (matches lab assumptions)
+
+---
+
+### 1) Provision infrastructure with Terraform
+
+From repo root:
+
+```bash
+cd terraform
+cp terraform.tfvars.example terraform.tfvars
+# edit terraform.tfvars with your key name and admin CIDR
+terraform init
+terraform apply
+After apply completes, generate the inventory snippet:
+
+bash
+Copy code
+terraform output -raw ansible_inventory_snippet
+2) Update Ansible inventory
+Edit inventory.ini in the repo root and paste the output from Terraform:
+
+ini
+Copy code
+[lb]
+lb-01 ansible_host=<LB_PUBLIC_IP>
+
+[web]
+web-01 ansible_host=<WEB1_PUBLIC_IP> private_ip=<WEB1_PRIVATE_IP>
+web-02 ansible_host=<WEB2_PUBLIC_IP> private_ip=<WEB2_PRIVATE_IP>
+3) Run Ansible configuration
+From repo root:
+
+bash
+Copy code
+ansible-playbook -i inventory.ini site.yml
+This will:
+
+install and configure Nginx on backend servers
+
+install and configure HAProxy on the load balancer
+
+wire backends via private IPs
+
+4) Validate
+From your machine:
+
+bash
+Copy code
+LB_IP=$(terraform output -raw lb_public_ip)
+curl http://$LB_IP
+Refresh a few times — you should see responses alternating between backend servers.
+
+Cleanup
+When finished:
+
+bash
+Copy code
+cd terraform
+terraform destroy
+yaml
+Copy code
 
 ### 1) Provision infrastructure with Terraform
 From repo root:
