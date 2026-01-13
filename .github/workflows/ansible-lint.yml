@@ -18,11 +18,6 @@ jobs:
   ansible-lint:
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        shell: bash
-        working-directory: ansible
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
